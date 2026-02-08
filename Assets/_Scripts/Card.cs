@@ -6,7 +6,7 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-06 21:53:32
-// Updated: 2026-02-08 14:01:21
+// Updated: 2026-02-08 19:40:37
 // Description: [Insert Description]
 // ----------------------------------------
 
@@ -15,7 +15,6 @@ using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
 using ElMonosapiens.FlipEmCards.Core;
-
 
 namespace ElMonosapiens.FlipEmCards.Gameplay
 {
@@ -89,9 +88,10 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             matchOwnerText.text = (turn == Turn.Player) ? "YOU" : "CPU";
             matchOwnerText.gameObject.SetActive(true);
         }
+
         private void OnClicked()
         {
-            if (tableManager.Turn is Turn.Player)
+            if (GameManager.Instance.CurrentTurn is Turn.Player)
                 tableManager.FlipCard(this);
         }
     }
