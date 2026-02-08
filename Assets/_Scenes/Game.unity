@@ -242,8 +242,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0aa06496f990a1a4aaf171b46373390c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElMonosapiens.FlipEmCards.Gameplay.TableManager
-  gameManager: {fileID: 435269130}
-  cpu: {fileID: 0}
   cardArray:
   - {fileID: 8100907337653845708}
   - {fileID: 242733351}
@@ -964,6 +962,7 @@ GameObject:
   m_Component:
   - component: {fileID: 435269129}
   - component: {fileID: 435269130}
+  - component: {fileID: 435269131}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -998,7 +997,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94fb63ebe3322e143af6a8d04debdc5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElMonosapiens.FlipEmCards.Core.GameManager
-  gameUI: {fileID: 0}
+  uiManager: {fileID: 0}
+  menuContainer: {fileID: 0}
+  gameContainer: {fileID: 0}
+  turnChangeDelay: 2
+--- !u!114 &435269131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 435269128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cd46abdfd90f68449e2ae3be22fb28f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ElMonosapiens.FlipEmCards.UI.GameUIManager
+  announcementPanel: {fileID: 0}
+  scoreDisplay: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -4739,6 +4755,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14189f046bd666543ba883500621948d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElMonosapiens.FlipEmCards.Gameplay.CPU
+  memoryDuration: 120
+  memoryCapacity: 10
+  recentCount: 5
+  baseMemoryAccuracy: 80
 --- !u!1 &2109008694
 GameObject:
   m_ObjectHideFlags: 0

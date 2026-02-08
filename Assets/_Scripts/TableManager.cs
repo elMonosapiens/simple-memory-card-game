@@ -6,7 +6,7 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-07 00:31:17
-// Updated: 2026-02-08 03:55:00
+// Updated: 2026-02-08 19:08:51
 // Description: [Insert Description]
 // ----------------------------------------
 
@@ -27,7 +27,6 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         [SerializeField] private Card[] cardArray;
         [SerializeField] private CardData[] cardDataArray;
 
-        public Turn Turn { get; private set; } = Turn.Player;
         public bool IsAllowedToFlipCards => FlipCardsCount < FLIP_THRESHOLD;
         public int FlipCardsCount { get; private set; }
         public int FacedDownCardsCount => facedDownCards.Count;
@@ -47,8 +46,8 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
 
         // ====== UNITY LIFECYCLE ======
         private void Awake() => MakethSingleton();
-        private void OnEnable() => GameManager.Instance.OnGameStarted += StartGame;
-        private void OnDisable() => GameManager.Instance.OnGameStarted -= StartGame;
+        private void OnEnable() => GameManager.Instance.OnGameStarted += HandleGameStarted;
+        private void OnDisable() => GameManager.Instance.OnGameStarted -= HandleGameStarted;
 
         // ====== INIT =====
         private void MakethSingleton()
@@ -58,15 +57,6 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
                 Destroy(gameObject);
             }
             Instance = this;
-        }
-
-        public void StartGame()
-        {
-            playerPoints = cpuPoints = 0;
-            Turn = Turn.Player;
-
-            SetupDeck();
-            StartTurn(Turn);
         }
 
         private void SetupDeck()
@@ -102,32 +92,23 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         // ====== TURN =======
         private void StartTurn(Turn turn)
         {
-            Turn = turn;
-
-            // TODO: Announce turn start
-
-            if (Turn is Turn.Player)
-                Debug.Log("<color=cyan>[TableManager]</color> Player turn...");
-            else
-                Debug.Log("<color=cyan>[TableManager]</color> CPU turn...");
-
-            EmitFreeToPlay();
+            // TODO: Announce turn start            
         }
 
-        private void ChangeTurn()
+        private void ResetTurn()
         {
-            Turn = (Turn is Turn.Player)
-                ? Turn.CPU
-                : Turn.Player;
-
-            StartTurn(Turn);
+            secondCard = null;
+            firstCard = null;
+            FlipCardsCount = 0;
         }
 
         private void EndTurn()
         {
             ListFacedDownCards();
-            ChangeTurn();
+            GameManager.Instance.RequestTurnChange();
         }
+
+        private void EndGame() { }
 
         // ====== CARD ======
         public void FlipCard(Card card)
@@ -175,17 +156,16 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             if (firstCard.Matches(secondCard))
             {
                 DisableCards();
-                SetCardsMatchOwnerText();
-                AddPoints();
+                SetCardsMatchedOwnerLabel();
+
+                GameManager.Instance.UpdateScore();
 
                 EmitMatchFound(firstCard, secondCard);
 
                 if (FacedDownCardsCount == 0)
-                    GameManager.Instance.DisplayResults();
+                    ComputeGameResult();
                 else
                     EmitFreeToPlay();
-
-                GameManager.Instance.UpdateScore(player: playerPoints, cpu: cpuPoints);
             }
             else
             {
@@ -196,29 +176,17 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             ResetTurn();
         }
 
-        private void ResetTurn()
-        {
-            secondCard = null;
-            firstCard = null;
-            FlipCardsCount = 0;
-        }
-
         private void DisableCards()
         {
             firstCard.SetInteractable(false);
             secondCard.SetInteractable(false);
         }
 
-        private void SetCardsMatchOwnerText()
+        private void SetCardsMatchedOwnerLabel()
         {
-            firstCard.SetMatchOwnerText(Turn);
-            secondCard.SetMatchOwnerText(Turn);
-        }
-
-        private void AddPoints()
-        {
-            if (Turn is Turn.Player) playerPoints++;
-            else cpuPoints++;
+            Turn currentTurn = GameManager.Instance.CurrentTurn;
+            firstCard.SetMatchOwnerText(currentTurn);
+            secondCard.SetMatchOwnerText(currentTurn);
         }
 
         private void FaceCardsDown()
@@ -229,8 +197,26 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             Invoke(nameof(EndTurn), 1.5f);
         }
 
+        private void ComputeGameResult()
+        {
+            GameResult result;
+
+            if (playerPoints > cpuPoints) result = GameResult.PlayerWin;
+            else if (playerPoints < cpuPoints) result = GameResult.CpuWin;
+            else result = GameResult.Draw;
+
+            GameManager.Instance.DisplayResult(result);
+        }
+
+        // ====== EVENT HANDLERS ======
+        private void HandleGameStarted(Turn turn)
+        {
+            SetupDeck();
+            StartTurn(turn);
+        }
+
         // ====== EMITTERS ======
-        private void EmitFreeToPlay() => OnFreeToPlay?.Invoke(Turn);
+        private void EmitFreeToPlay() => OnFreeToPlay?.Invoke(GameManager.Instance.CurrentTurn);
         private void EmitTurnEnded(Card first, Card second) => OnTurnEnded?.Invoke(first, second);
         private void EmitMatchFound(Card first, Card second) => OnMatchFound?.Invoke(first, second);
 

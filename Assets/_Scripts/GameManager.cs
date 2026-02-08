@@ -6,13 +6,15 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-07 00:41:37
-// Updated: 2026-02-08 02:45:49
+// Updated: 2026-02-08 19:35:19
 // Description: [Insert Description]
 // ----------------------------------------
 
 using System;
 using UnityEngine;
 using ElMonosapiens.FlipEmCards.UI;
+using ElMonosapiens.FlipEmCards.Gameplay;
+using System.Collections;
 
 namespace ElMonosapiens.FlipEmCards.Core
 {
@@ -20,19 +22,23 @@ namespace ElMonosapiens.FlipEmCards.Core
     {
         public static GameManager Instance { get; private set; }
 
-        [SerializeField] private GameUI gameUI;
+        [SerializeField] private GameUIManager uiManager;
+        [SerializeField] private GameObject menuContainer;
+        [SerializeField] private GameObject gameContainer;
 
-        public event Action OnGameStarted;
+        [Header("Config")]
+        [SerializeField] private float turnChangeDelay = 2f;
 
-        private void Awake()
-        {
-            MakethSingleton();
-        }
+        public int PlayerPoints { get; private set; } = 0;
+        public int CpuPoints { get; private set; } = 0;
+        public Turn CurrentTurn { get; private set; }
 
-        private void Start()
-        {
-            OnGameStarted?.Invoke();
-        }
+        public event Action<Turn> OnGameStarted;
+        public event Action<Turn> OnTurnChanged;
+        public event Action<GameResult> OnGameResult;
+
+        private void Awake() => MakethSingleton();
+        private void Start() => ShowTitleScreen();
 
         private void MakethSingleton()
         {
@@ -43,14 +49,75 @@ namespace ElMonosapiens.FlipEmCards.Core
             Instance = this;
         }
 
-        public void UpdateScore(int player, int cpu)
+        public void StartGame(Turn turn)
         {
+            ResetScore();
+            ShowGameScreen();
 
+            OnGameStarted?.Invoke(turn);
         }
 
-        public void DisplayResults()
+        public void RequestTurnChange()
         {
+            Turn nextTurn = CurrentTurn == Turn.Player
+                ? Turn.CPU
+                : Turn.Player;
 
+            if (nextTurn is Turn.Player)
+                Debug.Log("<color=white>[GameManager]</color> Player turn...");
+            else
+                Debug.Log("<color=white>[GameManager]</color> CPU turn...");
+
+            StartCoroutine(ChangeTurn(nextTurn));
+        }
+
+        private IEnumerator ChangeTurn(Turn nextTurn)
+        {
+            CurrentTurn = nextTurn;
+            uiManager.AnnounceNextTurn(nextTurn);
+
+            yield return new WaitForSeconds(turnChangeDelay);
+
+            uiManager.HideAnnouncementPanel();
+
+            OnTurnChanged?.Invoke(nextTurn);
+        }
+
+        public void EndGame()
+        {
+            ShowTitleScreen();
+        }
+
+        private void ShowGameScreen()
+        {
+            menuContainer.SetActive(false);
+            gameContainer.SetActive(true);
+        }
+
+        private void ShowTitleScreen()
+        {
+            gameContainer.SetActive(false);
+            menuContainer.SetActive(true);
+        }
+
+        public void UpdateScore()
+        {
+            if (CurrentTurn is Turn.Player) PlayerPoints++;
+            else CpuPoints++;
+
+            uiManager.UpdateScore(PlayerPoints, CpuPoints);
+        }
+
+        private void ResetScore()
+        {
+            PlayerPoints = CpuPoints = 0;
+            uiManager.UpdateScore(PlayerPoints, CpuPoints);
+        }
+
+        public void DisplayResult(GameResult result)
+        {
+            OnGameResult?.Invoke(result);
+            Invoke(nameof(EndGame), 3f);
         }
     }
 }

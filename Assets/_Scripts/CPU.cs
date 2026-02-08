@@ -6,7 +6,7 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-07 19:48:24
-// Updated: 2026-02-08 03:32:16
+// Updated: 2026-02-08 14:19:47
 // Description: [Insert Description]
 // ----------------------------------------
 
@@ -35,7 +35,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
 
         private void OnEnable()
         {
-            GameManager.Instance.OnGameStarted += StartMemoryTimer;
+            GameManager.Instance.OnGameStarted += HandleGameStart;
             TableManager.Instance.OnFreeToPlay += HandleFreeToPlay;
             TableManager.Instance.OnMatchFound += HandleMatchUpFound;
             TableManager.Instance.OnTurnEnded += HandleTurnEnded;
@@ -43,7 +43,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
 
         private void OnDisable()
         {
-            GameManager.Instance.OnGameStarted -= StartMemoryTimer;
+            GameManager.Instance.OnGameStarted -= HandleGameStart;
             TableManager.Instance.OnFreeToPlay -= HandleFreeToPlay;
             TableManager.Instance.OnMatchFound -= HandleMatchUpFound;
             TableManager.Instance.OnTurnEnded -= HandleTurnEnded;
@@ -260,7 +260,9 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         }
 
         // ====== EVENT HANDLERS ======
-        public void HandleFreeToPlay(Turn turn)
+        private void HandleGameStart(Turn turn) => StartMemoryTimer();
+
+        private void HandleFreeToPlay(Turn turn)
         {
             if (turn == Turn.Player) return;
 
