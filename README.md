@@ -23,7 +23,7 @@ This project showcases the **core mechanic** from _Mosquintal: Memory_, a 3D com
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/<elmonosapiens>/SimpleMemoryCardGame.git
+   git clone https://github.com/<elmonosapiens>/simple-memory-card-game.git
    ```
 2. Open the project in **Unity Hub** (Unity 6.3 LTS recommended).
 3. Install **DOTween**:
@@ -38,10 +38,6 @@ You can play the final version of the game directly in your browser:
 
 - [Itch.io](https://itch.io/) — _(link to be added after upload)_
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
 ## Assets
 
 Icons made by [Delapouite](https://delapouite.com),  
@@ -49,3 +45,7 @@ sourced from [Game-Icons.net](https://game-icons.net),
 licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 
 Icons may have been resized or recolored for use in this project.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
