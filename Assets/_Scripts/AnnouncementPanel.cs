@@ -1,12 +1,12 @@
 // ----------------------------------------
-// Script: AnnouncementDisplay.cs
+// Script: AnnouncementPanel.cs
 // Author: elMonosapiens
 // Project: ElMonosapiens.FlipEmCards
 // Module: UI
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-08 15:15:38
-// Updated: 2026-02-08 17:15:21
+// Updated: 2026-02-08 22:38:06
 // Description: [Insert Description]
 // ----------------------------------------
 
@@ -18,7 +18,7 @@ namespace ElMonosapiens.FlipEmCards.UI
 {
     public class AnnouncementPanel : MonoBehaviour
     {
-        [SerializeField] private TextMeshProUGUI message;
+        [SerializeField] private TextMeshProUGUI messageText;
         [SerializeField] private GameObject transparentPanel;
 
         public void ShowTurn(Turn turn)
@@ -44,14 +44,12 @@ namespace ElMonosapiens.FlipEmCards.UI
         public void Hide()
         {
             transparentPanel.SetActive(false);
-            message.gameObject.SetActive(false);
-            message.text = "";
+            messageText.text = "";
         }
 
         private void DisplayMessage(string message)
         {
-            this.message.text = message;
-            this.message.gameObject.SetActive(true);
+            messageText.text = message;
         }
     }
 }

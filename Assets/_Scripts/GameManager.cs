@@ -6,7 +6,7 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-07 00:41:37
-// Updated: 2026-02-08 19:35:19
+// Updated: 2026-02-08 22:41:02
 // Description: [Insert Description]
 // ----------------------------------------
 
@@ -23,8 +23,9 @@ namespace ElMonosapiens.FlipEmCards.Core
         public static GameManager Instance { get; private set; }
 
         [SerializeField] private GameUIManager uiManager;
-        [SerializeField] private GameObject menuContainer;
-        [SerializeField] private GameObject gameContainer;
+        [SerializeField] private GameObject titleScreenGO;
+        [SerializeField] private GameObject gameScreenGO;
+        [SerializeField] private GameObject blockInputPanel;
 
         [Header("Config")]
         [SerializeField] private float turnChangeDelay = 2f;
@@ -33,13 +34,25 @@ namespace ElMonosapiens.FlipEmCards.Core
         public int CpuPoints { get; private set; } = 0;
         public Turn CurrentTurn { get; private set; }
 
-        public event Action<Turn> OnGameStarted;
+        public event Action OnGameStarted;
+        public event Action OnGameEnded;
         public event Action<Turn> OnTurnChanged;
-        public event Action<GameResult> OnGameResult;
+        public event Action<Turn> OnExtraTurn;
+        public event Action<Card, Card> OnTurnEnded;
 
+        // ====== UNITY LIFECYCLE ======
         private void Awake() => MakethSingleton();
-        private void Start() => ShowTitleScreen();
 
+        private void Start()
+        {
+            ShowTitleScreen();
+            TableManager.Instance.OnMatchFound += HandleMatchFound;
+        }
+
+        private void OnDestroy() =>
+            TableManager.Instance.OnMatchFound -= HandleMatchFound;
+
+        // ====== INIT ======
         private void MakethSingleton()
         {
             if (Instance != null && Instance != this)
@@ -49,12 +62,19 @@ namespace ElMonosapiens.FlipEmCards.Core
             Instance = this;
         }
 
+        // ====== GAMEPLAY ======
         public void StartGame(Turn turn)
         {
             ResetScore();
             ShowGameScreen();
+            StartCoroutine(ChangeTurn(turn));
 
-            OnGameStarted?.Invoke(turn);
+            OnGameStarted?.Invoke();
+        }
+
+        public void EndTurn(Card firstFlip, Card secondFlip)
+        {
+            OnTurnEnded?.Invoke(firstFlip, secondFlip);
         }
 
         public void RequestTurnChange()
@@ -63,16 +83,22 @@ namespace ElMonosapiens.FlipEmCards.Core
                 ? Turn.CPU
                 : Turn.Player;
 
-            if (nextTurn is Turn.Player)
-                Debug.Log("<color=white>[GameManager]</color> Player turn...");
-            else
-                Debug.Log("<color=white>[GameManager]</color> CPU turn...");
-
             StartCoroutine(ChangeTurn(nextTurn));
         }
 
         private IEnumerator ChangeTurn(Turn nextTurn)
         {
+            if (nextTurn is Turn.Player)
+            {
+                Debug.Log("<color=white>[GameManager]</color> Player turn...");
+                blockInputPanel.SetActive(false);
+            }
+            else
+            {
+                Debug.Log("<color=white>[GameManager]</color> CPU turn...");
+                blockInputPanel.SetActive(true);
+            }
+
             CurrentTurn = nextTurn;
             uiManager.AnnounceNextTurn(nextTurn);
 
@@ -83,21 +109,38 @@ namespace ElMonosapiens.FlipEmCards.Core
             OnTurnChanged?.Invoke(nextTurn);
         }
 
+        public void ContinuePlaying()
+        {
+            OnExtraTurn?.Invoke(CurrentTurn);
+        }
+
+        public void ComputeResult()
+        {
+            GameResult result;
+
+            if (PlayerPoints > CpuPoints) result = GameResult.PlayerWin;
+            else if (PlayerPoints < CpuPoints) result = GameResult.CpuWin;
+            else result = GameResult.Draw;
+
+            DisplayResult(result);
+        }
+
         public void EndGame()
         {
             ShowTitleScreen();
+            OnGameEnded?.Invoke();
         }
 
         private void ShowGameScreen()
         {
-            menuContainer.SetActive(false);
-            gameContainer.SetActive(true);
+            titleScreenGO.SetActive(false);
+            gameScreenGO.SetActive(true);
         }
 
         private void ShowTitleScreen()
         {
-            gameContainer.SetActive(false);
-            menuContainer.SetActive(true);
+            gameScreenGO.SetActive(false);
+            titleScreenGO.SetActive(true);
         }
 
         public void UpdateScore()
@@ -116,8 +159,13 @@ namespace ElMonosapiens.FlipEmCards.Core
 
         public void DisplayResult(GameResult result)
         {
-            OnGameResult?.Invoke(result);
+            uiManager.AnnounceGameResult(result);
             Invoke(nameof(EndGame), 3f);
+        }
+
+        private void HandleMatchFound(Card firstCard, Card secondCard)
+        {
+            UpdateScore();
         }
     }
 }

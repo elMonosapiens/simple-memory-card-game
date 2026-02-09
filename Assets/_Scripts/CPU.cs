@@ -6,15 +6,14 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-07 19:48:24
-// Updated: 2026-02-08 14:19:47
+// Updated: 2026-02-08 23:32:43
 // Description: [Insert Description]
 // ----------------------------------------
 
 using System.Collections;
 using System.Collections.Generic;
-using DG.Tweening;
-using ElMonosapiens.FlipEmCards.Core;
 using UnityEngine;
+using ElMonosapiens.FlipEmCards.Core;
 
 namespace ElMonosapiens.FlipEmCards.Gameplay
 {
@@ -22,10 +21,10 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
     {
         [Header("Config")]
         [SerializeField] private float memoryDuration = 120f;
-        [SerializeField] private int memoryCapacity = 10;
+        [SerializeField] private int memoryCapacity = 16;
 
         [Tooltip("How many recent cards count as fresh.")]
-        [SerializeField] private int recentCount = 5;
+        [SerializeField] private int recentCount = 8;
 
         [Tooltip("Percent chance to recall when small memory.")]
         [SerializeField] private int baseMemoryAccuracy = 80;
@@ -36,22 +35,25 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         private void OnEnable()
         {
             GameManager.Instance.OnGameStarted += HandleGameStart;
-            TableManager.Instance.OnFreeToPlay += HandleFreeToPlay;
+            GameManager.Instance.OnGameEnded += HandleGameEnded;
+            GameManager.Instance.OnTurnChanged += HandleTurnChanged;
+            GameManager.Instance.OnTurnEnded += HandleTurnEnded;
+            GameManager.Instance.OnExtraTurn += HandleExtraTurn;
             TableManager.Instance.OnMatchFound += HandleMatchUpFound;
-            TableManager.Instance.OnTurnEnded += HandleTurnEnded;
         }
 
         private void OnDisable()
         {
             GameManager.Instance.OnGameStarted -= HandleGameStart;
-            TableManager.Instance.OnFreeToPlay -= HandleFreeToPlay;
+            GameManager.Instance.OnGameEnded -= HandleGameEnded;
+            GameManager.Instance.OnTurnChanged -= HandleTurnChanged;
+            GameManager.Instance.OnTurnEnded -= HandleTurnEnded;
+            GameManager.Instance.OnExtraTurn -= HandleExtraTurn;
             TableManager.Instance.OnMatchFound -= HandleMatchUpFound;
-            TableManager.Instance.OnTurnEnded -= HandleTurnEnded;
         }
 
         private void StartMemoryTimer()
         {
-            ClearMemory();
             StopMemoryTimer();
             forgetCoroutine = StartCoroutine(ForgetOldestPeriodically());
         }
@@ -88,15 +90,30 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         public void ClearMemory() => cardsInMemory.Clear();
 
         // ====== BEHAVIOUR ======       
-        private IEnumerator FlipPair(Card first, Card second)
+        private void Play()
         {
-            yield return Flip(first);
-            yield return Flip(second);
+            // 1. Try to find a match up in memory
+            if (TryFindPairWithinRecent(recentCount, out Card first, out Card second))
+            {
+                StartCoroutine(FlipPair(first, second));
+                Debug.Log($"<color=yellow>[CPU]</color> Found match up in memory! ({first.Label})");
+                return;
+            }
+
+            // 2. Flip a random card
+            StartCoroutine(ThinkAndFlipRandom());
+            Debug.Log("<color=yellow>[CPU]</color> No match up found in memory, flipping a random card...");
         }
 
-        private IEnumerator FlipRandom()
+        private IEnumerator FlipPair(Card first, Card second)
         {
-            yield return Wait();
+            yield return ThinkAndFlip(first);
+            yield return ThinkAndFlip(second);
+        }
+
+        private IEnumerator ThinkAndFlipRandom()
+        {
+            yield return Think();
 
             // Choose a random faced-down card
             if (TableManager.Instance.FacedDownCardsCount == 0) yield break;
@@ -104,7 +121,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             int idx = Random.Range(0, TableManager.Instance.FacedDownCardsCount);
             Card randomCard = TableManager.Instance.FacedDownCards[idx];
 
-            yield return Flip(randomCard);
+            yield return ThinkAndFlip(randomCard);
 
             if (TableManager.Instance.IsAllowedToFlipCards)
             {
@@ -112,26 +129,26 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
                 if (TryFindMatchFor(randomCard, recentCount, accuracy, out Card match))
                 {
                     Debug.Log($"<color=yellow>[CPU]</color> Found a match in memory...");
-                    yield return Flip(match);
+                    yield return ThinkAndFlip(match);
                 }
                 else
                 {
                     Debug.Log("<color=yellow>[CPU]</color> No match up found in memory, flipping another random card...");
-                    yield return Wait();
+                    yield return Think();
 
                     // Flip another random card
-                    StartCoroutine(FlipRandom());
+                    StartCoroutine(ThinkAndFlipRandom());
                 }
             }
         }
 
-        private IEnumerator Flip(Card card)
+        private IEnumerator ThinkAndFlip(Card card)
         {
-            yield return Wait(longer: true);
+            yield return Think(longer: true);
             TableManager.Instance.FlipCard(card);
         }
 
-        private IEnumerator Wait(bool longer = false)
+        private IEnumerator Think(bool longer = false)
         {
             float min, max;
 
@@ -260,23 +277,22 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         }
 
         // ====== EVENT HANDLERS ======
-        private void HandleGameStart(Turn turn) => StartMemoryTimer();
+        private void HandleGameStart() => StartMemoryTimer();
 
-        private void HandleFreeToPlay(Turn turn)
+        private void HandleGameEnded()
         {
-            if (turn == Turn.Player) return;
+            StopMemoryTimer();
+            ClearMemory();
+        }
 
-            // 1. Try to find a match up in memory
-            if (TryFindPairWithinRecent(recentCount, out Card first, out Card second))
-            {
-                StartCoroutine(FlipPair(first, second));
-                Debug.Log($"<color=yellow>[CPU]</color> Found match up in memory! ({first.Label})");
-                return;
-            }
+        private void HandleTurnChanged(Turn turn)
+        {
+            if (turn is Turn.CPU) Play();
+        }
 
-            // 2. Flip a random card
-            StartCoroutine(FlipRandom());
-            Debug.Log("<color=yellow>[CPU]</color> No match up found in memory, flipping a random card...");
+        private void HandleExtraTurn(Turn turn)
+        {
+            if (turn is Turn.CPU) Play();
         }
 
         private void HandleTurnEnded(Card first, Card second)

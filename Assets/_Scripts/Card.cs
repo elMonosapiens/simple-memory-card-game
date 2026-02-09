@@ -6,7 +6,7 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-06 21:53:32
-// Updated: 2026-02-08 19:40:37
+// Updated: 2026-02-08 19:58:19
 // Description: [Insert Description]
 // ----------------------------------------
 
@@ -15,6 +15,7 @@ using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
 using ElMonosapiens.FlipEmCards.Core;
+using System;
 
 namespace ElMonosapiens.FlipEmCards.Gameplay
 {
@@ -50,6 +51,8 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             button.onClick.AddListener(OnClicked);
         }
 
+        private void OnDestroy() => KillTweens();
+
         public void SetData(CardData newData) => data = newData;
         public void SetInteractable(bool isEnabled) => button.interactable = isEnabled;
 
@@ -62,12 +65,11 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             matchOwnerText.gameObject.SetActive(false);
         }
 
-        public void Flip()
+        public void Flip(Action onComplete = null)
         {
             IsFaceUp = !IsFaceUp;
 
-            flipSequence?.Kill();
-            transform.DOKill();
+            KillTweens();
 
             flipSequence = DOTween.Sequence();
             flipSequence.Append(transform.DOScale(scaledUpValue, scaleUpDuration)).SetEase(scaleUpEase);
@@ -75,6 +77,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             flipSequence.AppendCallback(UpdateSprite);
             flipSequence.Append(transform.DOScaleX(scaledUpValue, spriteChangeDuration));
             flipSequence.Append(transform.DOScale(Vector3.one, scaleDownDuration));
+            flipSequence.AppendCallback(() => onComplete?.Invoke());
         }
 
         public void UpdateSprite() =>
@@ -93,6 +96,12 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         {
             if (GameManager.Instance.CurrentTurn is Turn.Player)
                 tableManager.FlipCard(this);
+        }
+
+        private void KillTweens()
+        {
+            flipSequence?.Kill();
+            if (transform != null) transform.DOKill();
         }
     }
 }
