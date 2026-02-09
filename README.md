@@ -3,6 +3,7 @@
 [![Made with Unity](https://img.shields.io/badge/Made%20with-Unity%206.3%20LTS-black?logo=unity&logoColor=white)](https://unity.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Play Online](https://img.shields.io/badge/Play-itch.io-orange)](https://itch.io/)
+[![Play on Unity Play](https://img.shields.io/badge/Unity%20Play-Play%20Now-blue)](https://play.unity.com/mg/other/your-game-link)
 
 ## About
 
