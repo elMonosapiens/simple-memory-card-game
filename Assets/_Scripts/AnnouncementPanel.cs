@@ -6,7 +6,7 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-08 15:15:38
-// Updated: 2026-02-08 22:38:06
+// Updated: 2026-02-09 00:19:43
 // Description: [Insert Description]
 // ----------------------------------------
 
@@ -37,7 +37,7 @@ namespace ElMonosapiens.FlipEmCards.UI
             {
                 case GameResult.PlayerWin: DisplayMessage("YOU WIN!"); break;
                 case GameResult.CpuWin: DisplayMessage("YOU LOSE..."); break;
-                case GameResult.Draw: DisplayMessage("IT'S A DRAW"); break;
+                case GameResult.Draw: DisplayMessage("DRAW GAME"); break;
             }
         }
 

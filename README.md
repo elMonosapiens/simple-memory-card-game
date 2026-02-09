@@ -33,7 +33,7 @@ This project showcases the **core mechanic** from _Mosquintal: Memory_, a 3D com
 
 ## Play Online
 
-You can play the game directly in your browser:
+You can play the final version of the game directly in your browser:
 
 - [Itch.io](https://itch.io/) — _(link to be added after upload)_
 

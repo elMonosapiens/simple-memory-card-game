@@ -6,7 +6,7 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-07 00:41:37
-// Updated: 2026-02-08 22:41:02
+// Updated: 2026-02-08 23:51:31
 // Description: [Insert Description]
 // ----------------------------------------
 
@@ -127,6 +127,7 @@ namespace ElMonosapiens.FlipEmCards.Core
 
         public void EndGame()
         {
+            uiManager.HideAnnouncementPanel();
             ShowTitleScreen();
             OnGameEnded?.Invoke();
         }
@@ -139,6 +140,7 @@ namespace ElMonosapiens.FlipEmCards.Core
 
         private void ShowTitleScreen()
         {
+            blockInputPanel.SetActive(false);
             gameScreenGO.SetActive(false);
             titleScreenGO.SetActive(true);
         }

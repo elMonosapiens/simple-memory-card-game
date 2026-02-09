@@ -6,16 +6,16 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-06 21:53:32
-// Updated: 2026-02-08 19:58:19
+// Updated: 2026-02-09 01:02:39
 // Description: [Insert Description]
 // ----------------------------------------
 
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
 using ElMonosapiens.FlipEmCards.Core;
-using System;
 
 namespace ElMonosapiens.FlipEmCards.Gameplay
 {
@@ -32,6 +32,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         [SerializeField] private float scaleUpDuration = 0.5f;
         [SerializeField] private float spriteChangeDuration = 0.1f;
         [SerializeField] private float scaleDownDuration = 0.25f;
+        [SerializeField] private float flipCompletionDelay = 1f;
         [SerializeField] private Ease scaleUpEase = Ease.Linear;
 
         public string Label => data.Label;
@@ -51,7 +52,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             button.onClick.AddListener(OnClicked);
         }
 
-        private void OnDestroy() => KillTweens();
+        private void OnDisable() => KillTween();
 
         public void SetData(CardData newData) => data = newData;
         public void SetInteractable(bool isEnabled) => button.interactable = isEnabled;
@@ -61,6 +62,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             tableManager = manager;
 
             IsFaceUp = false;
+            transform.localScale = Vector3.one;
             image.sprite = backSprite;
             matchOwnerText.gameObject.SetActive(false);
         }
@@ -69,7 +71,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         {
             IsFaceUp = !IsFaceUp;
 
-            KillTweens();
+            KillTween();
 
             flipSequence = DOTween.Sequence();
             flipSequence.Append(transform.DOScale(scaledUpValue, scaleUpDuration)).SetEase(scaleUpEase);
@@ -77,6 +79,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             flipSequence.AppendCallback(UpdateSprite);
             flipSequence.Append(transform.DOScaleX(scaledUpValue, spriteChangeDuration));
             flipSequence.Append(transform.DOScale(Vector3.one, scaleDownDuration));
+            flipSequence.AppendInterval(flipCompletionDelay);
             flipSequence.AppendCallback(() => onComplete?.Invoke());
         }
 
@@ -98,7 +101,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
                 tableManager.FlipCard(this);
         }
 
-        private void KillTweens()
+        private void KillTween()
         {
             flipSequence?.Kill();
             if (transform != null) transform.DOKill();

@@ -6,7 +6,7 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-07 19:48:24
-// Updated: 2026-02-08 23:32:43
+// Updated: 2026-02-09 00:51:54
 // Description: [Insert Description]
 // ----------------------------------------
 
@@ -128,7 +128,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
                 int accuracy = ComputeMemoryAccuracy();
                 if (TryFindMatchFor(randomCard, recentCount, accuracy, out Card match))
                 {
-                    Debug.Log($"<color=yellow>[CPU]</color> Found a match in memory...");
+                    Debug.Log($"<color=yellow>[CPU]</color> Found a match in memory!");
                     yield return ThinkAndFlip(match);
                 }
                 else
@@ -246,7 +246,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             if (flipped == null) return false;
 
             // Accuracy check: only proceed within probability accuracyPercent            
-            if (UnityEngine.Random.Range(0, 100) >= accuracyPercent)
+            if (Random.Range(0, 100) >= accuracyPercent)
                 return false;
 
             // Clamp the number of cards to search between 1 and the actual count
@@ -271,8 +271,10 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         {
             // Base accuracy plus small bonus for smaller memory
             int size = cardsInMemory.Count;
+
             // Smaller memory = slightly better recall
-            int bonus = size == 0 ? 0 : Mathf.Clamp(10 - size, 0, 10);
+            int bonus = Mathf.Clamp(memoryCapacity - size, 0, memoryCapacity);
+
             return Mathf.Clamp(baseMemoryAccuracy + bonus, 10, 100);
         }
 
@@ -283,6 +285,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         {
             StopMemoryTimer();
             ClearMemory();
+            StopAllCoroutines();
         }
 
         private void HandleTurnChanged(Turn turn)

@@ -6,7 +6,7 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-07 00:31:17
-// Updated: 2026-02-08 22:52:42
+// Updated: 2026-02-09 00:48:08
 // Description: [Insert Description]
 // ----------------------------------------
 
@@ -107,8 +107,12 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         {
             if (!CanFlipCard(card)) return;
 
-            card.Flip();
-            StoreFlippedCard(card);
+            card.Flip(onComplete: () =>
+            {
+                // Store the card after the flip completion (has delay), that way, the CheckMatchUp will be in sync
+                StoreFlippedCard(card);
+            });
+
             ListFacedDownCards();
 
             FlipCardsCount++;
@@ -139,7 +143,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
             else if (secondCard == null)
             {
                 secondCard = card;
-                Invoke(nameof(CheckMatchUp), 2f);
+                CheckMatchUp();
             }
         }
 
@@ -155,13 +159,13 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
                     GameManager.Instance.ComputeResult();
                 else
                     GameManager.Instance.ContinuePlaying();
+
+                ClearTurnValues();
             }
             else // If no match up, end turn
             {
                 GameManager.Instance.EndTurn(firstCard, secondCard);
             }
-
-            ClearTurnValues();
         }
 
         private void DisableCards()
@@ -192,8 +196,12 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
 
         private void HandleCardsFaceDownComplete()
         {
-            ListFacedDownCards();
+            // Request turn change first before clearing current FLipCardsCount
+            // This avoids the player being able to flip another card right after the turn end
             GameManager.Instance.RequestTurnChange();
+
+            ListFacedDownCards();
+            ClearTurnValues();
         }
 
         // ====== EMITTERS ======        
