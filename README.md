@@ -1,19 +1,18 @@
 # Simple Memory Card Game
 
-[![Made with Unity](https://img.shields.io/badge/Made%20with-Unity%206.3%20LTS-black?logo=unity&logoColor=white)](https://unity.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Play Online](https://img.shields.io/badge/Play-itch.io-orange)](https://itch.io/)
-[![Play on Unity Play](https://img.shields.io/badge/Unity%20Play-Play%20Now-blue)](https://play.unity.com/mg/other/your-game-link)
+[![Made with Unity](https://img.shields.io/badge/Made%20with-Unity%206.3%20LTS-black?logo=unity&logoColor=white)](https://unity.com/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![Play on Unity Play](https://img.shields.io/badge/Unity%20Play-Play%20Now-blue)](https://play.unity.com/mg/other/your-game-link) [![Play Online](https://img.shields.io/badge/Play-itch.io-orange)](https://itch.io/)
 
 ## About
 
-A simple browser-based memory card game where you flip cards to match pairs against the CPU.  
-This project showcases the **core mechanic** from _Mosquintal: Memory_, a 3D commercial Unity project currently in development.
+I started this small project to explore the AI opponent behaviour, its memory feature, and the card-shuffling logic, inspired by a minigame I created years ago with a friend. Initially designed as minigame from a larger project of mine, **Mosquintal** (still in development), this version is being expanded into a more robust standalone release: the spin-off **Mosquintal: Memory.**
 
 ## Features
 
 - Built with **Unity 6.3 LTS** and **C#**
 - Simple game loop: title → play → match cards → end → restart
+- Loose turn-based mecanic
+- Card-shuffling logic
+- AI opponent with memory decay
 
 ## Dependencies
 
