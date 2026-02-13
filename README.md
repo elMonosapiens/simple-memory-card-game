@@ -9,7 +9,7 @@ I started this small project to explore the AI opponent behaviour, its memory fe
 ## Features
 
 - Built with **Unity 6.3 LTS** and **C#**
-- Simple game loop: title → play → match cards → end → restart
+- Simple game loop
 - Loose turn-based mecanic
 - Card-shuffling logic
 - AI opponent with memory decay
