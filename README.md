@@ -4,7 +4,7 @@
 
 ## About
 
-I started this small project to explore the AI opponent behaviour, its memory feature, and the card-shuffling logic from a minigame I created years ago with a friend. Initially designed as minigame from a larger project of mine, **Mosquintal** (still in development), this version is being expanded into a more robust standalone release: the spin-off **Mosquintal: Memory.**
+I started this small project to explore the AI opponent behaviour, its memory feature, and the card-shuffling logic from a minigame I created years ago with a friend.
 
 ## Features
 
