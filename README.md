@@ -22,7 +22,7 @@ I started this small project to explore the AI opponent behaviour, its memory fe
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/<elmonosapiens>/simple-memory-card-game.git
+   git clone https://github.com/elmonosapiens/simple-memory-card-game.git
    ```
 2. Open the project in **Unity Hub** (Unity 6.3 LTS recommended).
 3. Install **DOTween**:
