@@ -6,7 +6,7 @@
 // License: MIT
 // Version: 1.0.0
 // Created: 2026-02-06 21:53:32
-// Updated: 2026-02-09 01:02:39
+// Updated: 2026-04-10 12:13:03
 // Description: [Insert Description]
 // ----------------------------------------
 
@@ -98,7 +98,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         private void OnClicked()
         {
             if (GameManager.Instance.CurrentTurn is Turn.Player)
-                tableManager.FlipCard(this);
+                tableManager.RequestCardFlip(this);
         }
 
         private void KillTween()

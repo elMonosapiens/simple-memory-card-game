@@ -3,17 +3,16 @@
 // Author: elMonosapiens
 // Project: ElMonosapiens.FlipEmCards
 // Module: Gameplay
-// Copyright © 2026 elMonosapiens Games. All rights reserved.
+// License: MIT
 // Version: 1.0.0
 // Created: 2026-02-07 01:21:29
-// Updated: 2026-02-07 02:27:57
+// Updated: 2026-04-10 11:15:05
 // Description: [Insert Description]
 // ----------------------------------------
 
 using System;
 using System.Collections.Generic;
 using ElMonosapiens.FlipEmCards.Core;
-using UnityEngine;
 
 namespace ElMonosapiens.FlipEmCards.Gameplay
 {
@@ -37,7 +36,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         /// Uses an unbiased Fisher–Yates shuffle to produce a uniform permutation.
         /// </summary>
         /// <param name="cards">Array of Card instances to receive data. Must not be null.</param>
-        /// <param name="dataArray">Array of CardData to assign. Must not be null and length must be <= cards.Length.</param>        
+        /// <param name="dataArray">Array of CardData to assign. Must not be null and length must be <= cards.Length.</param>
         public static void ShuffleCards(Card[] cards, CardData[] dataArray)
         {
             if (cards == null) throw new ArgumentNullException(nameof(cards));

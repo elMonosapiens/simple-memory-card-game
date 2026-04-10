@@ -4,12 +4,13 @@
 // Project: ElMonosapiens.FlipEmCards
 // Module: Gameplay
 // License: MIT
-// Version: 1.0.0
+// Version: 1.1.0
 // Created: 2026-02-07 19:48:24
-// Updated: 2026-02-09 00:51:54
+// Updated: 2026-04-10 12:27:03
 // Description: [Insert Description]
 // ----------------------------------------
 
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,6 +20,11 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
 {
     public class CPU : MonoBehaviour
     {
+        private const float MIN_DELAY_LOW = 0.25f;
+        private const float MIN_DELAY_HIGH = 0.75f;
+        private const float MAX_DELAY_LOW = 1f;
+        private const float MAX_DELAY_HIGH = 2f;
+
         [Header("Config")]
         [SerializeField] private float memoryDuration = 120f;
         [SerializeField] private int memoryCapacity = 16;
@@ -113,57 +119,85 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
 
         private IEnumerator ThinkAndFlipRandom()
         {
+            if (!TableManager.Instance.IsAllowedToFlipCards ||
+                TableManager.Instance.FacedDownCardsCount == 0)
+                yield break;
+
+            // First flip
+            yield return Think();
+            Card firstCard = GetRandomCard();
+
+            yield return ThinkAndFlip(firstCard);
+
+            if (!TableManager.Instance.IsAllowedToFlipCards ||
+                TableManager.Instance.FacedDownCardsCount == 0)
+                yield break;
+
+            // Second flip
             yield return Think();
 
-            // Choose a random faced-down card
-            if (TableManager.Instance.FacedDownCardsCount == 0) yield break;
+            Card secondCard;
+            int accuracy = ComputeMemoryAccuracy();
 
-            int idx = Random.Range(0, TableManager.Instance.FacedDownCardsCount);
-            Card randomCard = TableManager.Instance.FacedDownCards[idx];
-
-            yield return ThinkAndFlip(randomCard);
-
-            if (TableManager.Instance.IsAllowedToFlipCards)
+            if (TryFindMatchFor(firstCard, recentCount, accuracy, out Card match))
             {
-                int accuracy = ComputeMemoryAccuracy();
-                if (TryFindMatchFor(randomCard, recentCount, accuracy, out Card match))
-                {
-                    Debug.Log($"<color=yellow>[CPU]</color> Found a match in memory!");
-                    yield return ThinkAndFlip(match);
-                }
-                else
-                {
-                    Debug.Log("<color=yellow>[CPU]</color> No match up found in memory, flipping another random card...");
-                    yield return Think();
-
-                    // Flip another random card
-                    StartCoroutine(ThinkAndFlipRandom());
-                }
+                Debug.Log($"<color=yellow>[CPU]</color> Found a match in memory!");
+                secondCard = match;
             }
+            else
+            {
+                Debug.Log("<color=yellow>[CPU]</color> No match up found in memory, flipping another random card...");
+                secondCard = GetRandomCard();
+            }
+
+            yield return ThinkAndFlip(secondCard);
+        }
+
+        private Card GetRandomCard()
+        {
+            var facedDown = TableManager.Instance.FacedDownCards;
+            if (facedDown.Count == 0)
+            {
+                Debug.LogWarning($"<color=yellow>[CPU]</color> GetRandomCard: FacedDownCards is empty!");
+                return null;
+            }
+
+            int recentCardsCount = Mathf.Clamp(recentCount, 0, cardsInMemory.Count);
+
+            // Build a set of the most recent memory entries
+            var recentSet = new HashSet<Card>(cardsInMemory.Take(recentCardsCount));
+
+            // Exclude those from the faced-down pool            
+            var pool = facedDown.Where(c => !recentSet.Contains(c)).ToList();
+
+            // If exclusion removes everything, fall back to full list
+            if (pool.Count == 0) pool = pool = facedDown.ToList();
+
+            return pool[Random.Range(0, pool.Count)];
         }
 
         private IEnumerator ThinkAndFlip(Card card)
         {
-            yield return Think(longer: true);
-            TableManager.Instance.FlipCard(card);
+            yield return Think();
+            TableManager.Instance.RequestCardFlip(card);
         }
 
-        private IEnumerator Think(bool longer = false)
+        private IEnumerator Think()
         {
-            float min, max;
+            int facedDown = TableManager.Instance.FacedDownCardsCount;
+            int totalCards = TableManager.Instance.TotalCardsCount;
 
-            if (longer)
-            {
-                min = 1f;
-                max = 2f;
-            }
-            else
-            {
-                min = 0.5f;
-                max = 0.8f;
-            }
+            // Ratio of faced-down cards to total
+            float ratio = (float)facedDown / totalCards;
 
-            yield return new WaitForSeconds(Random.Range(min, max));
+            // Map ration to delay range
+            // More faced-down cards = longed delay
+            // Less faced-down cards = shorter delay
+            float minDelay = Mathf.Lerp(MIN_DELAY_LOW, MIN_DELAY_HIGH, ratio);
+            float maxDelay = Mathf.Lerp(MAX_DELAY_LOW, MAX_DELAY_HIGH, ratio);
+
+            float delay = Random.Range(minDelay, maxDelay);
+            yield return new WaitForSeconds(delay);
         }
 
         // ====== MEMORY ======       

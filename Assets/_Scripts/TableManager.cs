@@ -4,9 +4,9 @@
 // Project: ElMonosapiens.FlipEmCards
 // Module: Gameplay
 // License: MIT
-// Version: 1.0.0
+// Version: 1.0.1
 // Created: 2026-02-07 00:31:17
-// Updated: 2026-02-09 00:48:08
+// Updated: 2026-04-10 12:27:24
 // Description: [Insert Description]
 // ----------------------------------------
 
@@ -30,6 +30,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         public bool IsAllowedToFlipCards => FlipCardsCount < FLIP_THRESHOLD;
         public int FlipCardsCount { get; private set; }
         public int FacedDownCardsCount => facedDownCards.Count;
+        public int TotalCardsCount => cardArray.Length;
         private bool IsAllCardsFaceUp => facedDownCards.Count == 0;
 
         public IReadOnlyList<Card> FacedDownCards => facedDownCards;
@@ -103,7 +104,7 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
         }
 
         // ====== CARD ======
-        public void FlipCard(Card card)
+        public void RequestCardFlip(Card card)
         {
             if (!CanFlipCard(card)) return;
 
@@ -155,12 +156,12 @@ namespace ElMonosapiens.FlipEmCards.Gameplay
                 SetCardsMatchedOwnerLabel();
                 EmitMatchFound(firstCard, secondCard);
 
+                ClearTurnValues();
+
                 if (IsAllCardsFaceUp)
                     GameManager.Instance.ComputeResult();
                 else
                     GameManager.Instance.ContinuePlaying();
-
-                ClearTurnValues();
             }
             else // If no match up, end turn
             {
